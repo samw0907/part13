@@ -4,7 +4,7 @@ const { PORT } = require('./util/config');
 const { connectToDatabase } = require('./util/db');
 const blogsRouter = require('./controllers/blogs');
 const usersRouter = require('./controllers/users');
-const loginRouter = require('./controllers/login');  // Add login route
+const loginRouter = require('./controllers/login');
 
 const app = express();
 
@@ -35,4 +35,3 @@ const start = async () => {
 };
 
 start();
-

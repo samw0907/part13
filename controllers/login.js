@@ -4,6 +4,7 @@ const router = require('express').Router();
 const { SECRET } = require('../util/config');
 const User = require('../models/user');
 
+
 router.post('/', async (request, response) => {
   const body = request.body;
 

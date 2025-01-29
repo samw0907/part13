@@ -29,10 +29,9 @@ User.init({
 }, {
   sequelize,
   underscored: true,
-  timestamps: true,  // Ensure Sequelize creates created_at and updated_at
+  timestamps: true,
   modelName: 'user',
   hooks: {
-    // Before creating a user, hash the password
     beforeCreate: async (user) => {
       if (user.passwordHash) {
         user.passwordHash = await bcrypt.hash(user.passwordHash, 10);

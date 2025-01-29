@@ -31,7 +31,7 @@ Blog.init(
     sequelize,
     modelName: 'blog',
     tableName: 'blogs',
-    timestamps: false  // Disable automatic timestamps
+    timestamps: true,
   }
 );
 
