@@ -1,9 +1,9 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const router = require('express').Router();
+
 const { SECRET } = require('../util/config');
 const User = require('../models/user');
-
 
 router.post('/', async (request, response) => {
   const body = request.body;
@@ -14,9 +14,20 @@ router.post('/', async (request, response) => {
     }
   });
 
-  const passwordCorrect = user && await bcrypt.compare(body.password, user.passwordHash);
+  if (!user) {
+    return response.status(401).json({
+      error: 'invalid username or password'
+    });
+  }
 
-  if (!(user && passwordCorrect)) {
+  // Log the password and hash to debug
+  console.log("Password provided:", body.password);
+  console.log("Stored password hash:", user.passwordHash);
+
+  const passwordCorrect = user && await bcrypt.compare(body.password, user.passwordHash);
+  console.log("Password comparison result:", passwordCorrect); // Log the result
+
+  if (!passwordCorrect) {
     return response.status(401).json({
       error: 'invalid username or password'
     });

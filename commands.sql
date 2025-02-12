@@ -17,3 +17,6 @@ SELECT * FROM blogs;
 
 drop table blogs;
 
+UPDATE blogs
+SET "updatedAt" = CURRENT_TIMESTAMP
+WHERE "updatedAt" IS NULL;

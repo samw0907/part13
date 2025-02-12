@@ -25,19 +25,22 @@ User.init({
   passwordHash: {
     type: DataTypes.STRING,
     allowNull: false,
-  },
+  }
 }, {
   sequelize,
-  underscored: true,
-  timestamps: true,
   modelName: 'user',
+  timestamps: true,
+  underscored: true,
   hooks: {
     beforeCreate: async (user) => {
-      if (user.passwordHash) {
-        user.passwordHash = await bcrypt.hash(user.passwordHash, 10);
+      if (user.password) {  // Hash the plain password field
+        const hashedPassword = await bcrypt.hash(user.password, 10);
+        console.log("Generated hash for password:", hashedPassword);  // Log generated hash
+        user.passwordHash = hashedPassword;
       }
     }
   }
+  
 });
 
 module.exports = User;

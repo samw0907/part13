@@ -1,8 +1,9 @@
-const Blog = require('./blog');
-const User = require('./user');
+const Blog = require('./blog')
+const User = require('./user')
 
-// Sync the user and blog models with the database
-Blog.sync();
-User.sync();
+User.hasMany(Blog)
+Blog.belongsTo(User)
+Blog.sync({ alter: true })
+User.sync({ alter: true })
 
-module.exports = { Blog, User };
+module.exports = {Blog, User}

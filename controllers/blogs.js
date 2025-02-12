@@ -1,6 +1,5 @@
 const router = require('express').Router();
-const { Blog } = require('../models');
-const { User } = require('../models');
+const { Blog, User } = require('../models');
 const jwt = require('jsonwebtoken');
 
 // Middleware to find the blog by ID
@@ -27,7 +26,13 @@ const tokenExtractor = (req, res, next) => {
 // GET all blogs
 router.get('/', async (req, res) => {
   try {
-    const blogs = await Blog.findAll();
+    const blogs = await Blog.findAll({
+      attributes: { exclude: ['userId'] },
+      include: {
+        model: User,
+        attributes: ['name']
+      }
+    });
     res.json(blogs);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch blogs' });
@@ -37,9 +42,12 @@ router.get('/', async (req, res) => {
 // POST a new blog
 router.post('/', tokenExtractor, async (req, res) => {
   try {
-    // Extract user from decoded token
     const user = await User.findByPk(req.decodedToken.id);
-    
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
     // Create blog and associate it with the logged-in user
     const { title, author, url, likes } = req.body;
     const newBlog = await Blog.create({
@@ -47,7 +55,7 @@ router.post('/', tokenExtractor, async (req, res) => {
       author,
       url,
       likes,
-      userId: user.id,  // Linking blog to user
+      userId: user.id,  // Associate the blog with the user who created it
     });
 
     res.status(201).json(newBlog);
@@ -67,8 +75,13 @@ router.get('/:id', blogFinder, async (req, res) => {
 });
 
 // DELETE a blog
-router.delete('/:id', blogFinder, async (req, res) => {
+router.delete('/:id', blogFinder, tokenExtractor, async (req, res) => {
   if (req.blog) {
+    // Check if the userId of the blog matches the logged-in user's id
+    if (req.blog.userId !== req.decodedToken.id) {
+      return res.status(403).json({ error: 'You do not have permission to delete this blog' });
+    }
+
     await req.blog.destroy();
     res.status(204).end();
   } else {

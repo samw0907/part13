@@ -1,17 +1,32 @@
 const router = require('express').Router();
 const bcrypt = require('bcrypt');
-const { User } = require('../models');
+const { User, Blog } = require('../models');
 
 // GET all users
 router.get('/', async (req, res) => {
   try {
-    const users = await User.findAll();
+  const users = await User.findAll({
+    include: {
+      model: Blog,
+      attributes: { exclude: ['userId'] }
+    }
+  });
     res.json(users);
   } catch (error) {
     console.error('Error fetching users:', error);
     res.status(500).json({ error: 'Failed to fetch users' });
   }
 });
+
+router.get('/:id', async (req, res) => {
+  const user = await User.findByPk(req.params.id)
+  if (user) {
+    res.json(user)
+  } else {
+    res.status(404).end()
+  }
+});
+
 
 // POST a new user
 router.post('/', async (req, res) => {
@@ -55,6 +70,23 @@ router.put('/:username', async (req, res) => {
     res.json(user);
   } catch (error) {
     res.status(400).json({ error: 'Failed to update username' });
+  }
+});
+
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findByPk(id);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    await user.destroy();
+    res.status(204).end(); // Successfully deleted, no content to return
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    res.status(500).json({ error: 'Failed to delete user' });
   }
 });
 

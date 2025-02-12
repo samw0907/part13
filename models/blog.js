@@ -25,6 +25,14 @@ Blog.init(
     likes: {
       type: DataTypes.INTEGER,
       defaultValue: 0
+    },
+    userId: {  // Add the userId field to associate with the user
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'users',  // Reference to the users table
+        key: 'id',
+      },
     }
   },
   {
