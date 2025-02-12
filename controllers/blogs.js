@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const { Blog, User } = require('../models');
 const jwt = require('jsonwebtoken');
+const { Op } = require('sequelize');
 
 // Middleware to find the blog by ID
 const blogFinder = async (req, res, next) => {
@@ -26,12 +27,23 @@ const tokenExtractor = (req, res, next) => {
 // GET all blogs
 router.get('/', async (req, res) => {
   try {
+    const where = {}
+
+    if (req.query.search) {
+      where[Op.or] = [
+        { title: { [Op.substring]: req.query.search } },
+        { author: { [Op.substring]: req.query.search } }
+      ]
+    }
+
     const blogs = await Blog.findAll({
       attributes: { exclude: ['userId'] },
       include: {
         model: User,
         attributes: ['name']
-      }
+      },
+      where,
+      order: [['likes', 'DESC']] 
     });
     res.json(blogs);
   } catch (error) {
