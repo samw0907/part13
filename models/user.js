@@ -22,7 +22,7 @@ User.init({
     type: DataTypes.STRING,
     allowNull: false
   },
-  passwordHash: {
+  password_hash: {
     type: DataTypes.STRING,
     allowNull: false,
   }
@@ -36,7 +36,7 @@ User.init({
       if (user.password) {  // Hash the plain password field
         const hashedPassword = await bcrypt.hash(user.password, 10);
         console.log("Generated hash for password:", hashedPassword);  // Log generated hash
-        user.passwordHash = hashedPassword;
+        user.password_hash = hashedPassword;
       }
     }
   }

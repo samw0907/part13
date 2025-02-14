@@ -3,15 +3,19 @@ const express = require('express');
 const { PORT } = require('./util/config');
 const { connectToDatabase } = require('./util/db');
 const blogsRouter = require('./controllers/blogs');
+const authorsRouter = require('./controllers/authors');
 const usersRouter = require('./controllers/users');
 const loginRouter = require('./controllers/login');
+const readingListRouter = require('./controllers/readinglists');
 
 const app = express();
 
 app.use(express.json());  // To parse JSON bodies
 app.use('/api/blogs', blogsRouter);  // Route handling for blogs
+app.use('/api/authors', authorsRouter);  // Route handling for authors
 app.use('/api/users', usersRouter);  // Route handling for users
 app.use('/api/login', loginRouter);  // Route handling for login
+app.use('/api/readinglists', readingListRouter);
 
 // Centralized error handling middleware
 app.use((err, req, res, next) => {

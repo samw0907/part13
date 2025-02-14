@@ -8,7 +8,7 @@ router.get('/', async (req, res) => {
   const users = await User.findAll({
     include: {
       model: Blog,
-      attributes: { exclude: ['userId'] }
+      attributes: { exclude: ['user_id'] }
     }
   });
     res.json(users);
@@ -19,13 +19,59 @@ router.get('/', async (req, res) => {
 });
 
 router.get('/:id', async (req, res) => {
-  const user = await User.findByPk(req.params.id)
-  if (user) {
-    res.json(user)
-  } else {
-    res.status(404).end()
+  try {
+    const userId = parseInt(req.params.id, 10);  // Ensure the ID is an integer
+    const { read } = req.query;  // Get the 'read' query parameter if it exists
+
+    // Build the query to include only blogs that match the 'read' status if provided
+    const whereClause = {};
+    if (read !== undefined) {
+      whereClause.read = read === 'true';  // If read=true, include only blogs marked as read
+    }
+
+    // Find the user by ID and include their blogs with the reading list status
+    const user = await User.findByPk(userId, {
+      include: {
+        model: Blog,
+        attributes: { exclude: ['user_id'] },
+        through: {
+          attributes: ['read', 'id'],  // Include the read status and join table id
+          where: whereClause,  // Apply the filter to the reading list
+        }
+      }
+    });
+
+    if (user) {
+      const response = {
+        id: user.id,
+        username: user.username,
+        name: user.name,
+        readings: user.blogs.map(blog => ({
+          id: blog.id,
+          title: blog.title,
+          author: blog.author,
+          url: blog.url,
+          likes: blog.likes,
+          year_written: blog.year_written,
+          readinglists: [
+            {
+              read: blog.reading_list.read,  // Get the read status from the reading list
+              id: blog.reading_list.id  // Get the ID of the join table row
+            }
+          ]
+        }))
+      };
+      res.json(response);
+    } else {
+      res.status(404).end();
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch user' });
   }
 });
+
+
 
 
 // POST a new user

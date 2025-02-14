@@ -26,7 +26,15 @@ Blog.init(
       type: DataTypes.INTEGER,
       defaultValue: 0
     },
-    userId: {  // Add the userId field to associate with the user
+    year_written: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: {
+        min: 1991,
+        max: new Date().getFullYear(),
+      }
+    },
+    user_id: {  // Add the userId field to associate with the user
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
@@ -40,6 +48,7 @@ Blog.init(
     modelName: 'blog',
     tableName: 'blogs',
     timestamps: true,
+    underscored: true, 
   }
 );
 

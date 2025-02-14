@@ -37,7 +37,7 @@ router.get('/', async (req, res) => {
     }
 
     const blogs = await Blog.findAll({
-      attributes: { exclude: ['userId'] },
+      attributes: { exclude: ['user_id'] },
       include: {
         model: User,
         attributes: ['name']
@@ -54,20 +54,27 @@ router.get('/', async (req, res) => {
 // POST a new blog
 router.post('/', tokenExtractor, async (req, res) => {
   try {
-    const user = await User.findByPk(req.decodedToken.id);
+    const { title, author, url, likes, year_written } = req.body;
 
+    // Validate the 'year_written' field
+    const currentYear = new Date().getFullYear();
+    if (year_written < 1991 || year_written > currentYear) {
+      return res.status(400).json({ error: `Invalid year written. Year must be between 1991 and ${currentYear}.` });
+    }
+
+    const user = await User.findByPk(req.decodedToken.id);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
     // Create blog and associate it with the logged-in user
-    const { title, author, url, likes } = req.body;
     const newBlog = await Blog.create({
       title,
       author,
       url,
       likes,
-      userId: user.id,  // Associate the blog with the user who created it
+      year_written,  // Save the year_written field
+      user_id: user.id,
     });
 
     res.status(201).json(newBlog);
@@ -90,7 +97,7 @@ router.get('/:id', blogFinder, async (req, res) => {
 router.delete('/:id', blogFinder, tokenExtractor, async (req, res) => {
   if (req.blog) {
     // Check if the userId of the blog matches the logged-in user's id
-    if (req.blog.userId !== req.decodedToken.id) {
+    if (req.blog.user_id !== req.decodedToken.id) {
       return res.status(403).json({ error: 'You do not have permission to delete this blog' });
     }
 
